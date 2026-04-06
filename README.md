@@ -37,7 +37,7 @@ A aplicação foi isolada em um container Docker, garantindo paridade entre dese
 **Passo a passo:**
 1. Clone este repositório:
    ```bash
-   git clone [https://github.com/dejota-04/IA-RDP.git](https://github.com/dejota-04/IA-RDP.git)
+   git clone https://github.com/Dejota-04/IA-RDP.git
    cd IA-RDP
 
 
