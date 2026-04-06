@@ -7,17 +7,17 @@ Este repositório contém a Prova de Conceito (PoC) do Assistente Virtual Inteli
 Com o crescimento da base de clientes e do catálogo de produtos, o suporte humano se torna um gargalo operacional e financeiro. Dúvidas repetitivas sobre frete, políticas de devolução e disponibilidade de mangás ocupam tempo útil da equipe.
 
 ## 💡 A Solução e Justificativa do Modelo
-[cite_start]Para resolver este problema, implementamos um assistente baseado em LLM (Large Language Model) utilizando a técnica de **RAG (Retrieval-Augmented Generation)** simulado[cite: 199, 201].
+Para resolver este problema, implementamos um assistente baseado em LLM (Large Language Model) utilizando a técnica de **RAG (Retrieval-Augmented Generation)** simulado].
 
 * **Modelo Escolhido:** `llama-3.1-8b-instant` (via Groq Cloud).
-* [cite_start]**Justificativa:** Optamos pelo LLaMA 3.1 rodando na infraestrutura LPU do Groq devido à **latência ultrabaixa** (respostas em milissegundos) e **custo zero** para desenvolvimento[cite: 200]. Modelos locais (como Ollama) exigiriam hardware dedicado pesado, enquanto o Groq nos permite escalar a aplicação com baixo custo e alta performance, essencial para uma experiência mobile fluida. A versão 3.1 de 8 bilhões de parâmetros é mais do que suficiente para tarefas de NLP como recomendação de produtos e FAQ.
+*  **Justificativa:** Optamos pelo LLaMA 3.1 rodando na infraestrutura LPU do Groq devido à **latência ultrabaixa** (respostas em milissegundos) e **custo zero** para desenvolvimento[cite: 200]. Modelos locais (como Ollama) exigiriam hardware dedicado pesado, enquanto o Groq nos permite escalar a aplicação com baixo custo e alta performance, essencial para uma experiência mobile fluida. A versão 3.1 de 8 bilhões de parâmetros é mais do que suficiente para tarefas de NLP como recomendação de produtos e FAQ.
 
 ## 🔄 Arquitetura e Fluxo de Dados
-A aplicação foi isolada em um container Docker, garantindo paridade entre desenvolvimento e produção. [cite_start]O fluxo de funcionamento da IA é o seguinte[cite: 202, 203]:
+A aplicação foi isolada em um container Docker, garantindo paridade entre desenvolvimento e produção.  O fluxo de funcionamento da IA é o seguinte[cite: 202, 203]:
 
 1. **Input (User):** O cliente digita a dúvida na interface web.
 2. **Backend (FastAPI):** A API recebe a requisição e injeta o `SYSTEM_PROMPT` contendo o contexto dinâmico do negócio.
-3. [cite_start]**Dados Utilizados:** O contexto contém as regras de negócio da loja (FAQ, frete, pagamentos) e o estado atual do catálogo de mangás em estoque[cite: 201].
+3.  **Dados Utilizados:** O contexto contém as regras de negócio da loja (FAQ, frete, pagamentos) e o estado atual do catálogo de mangás em estoque[cite: 201].
 4. **Processamento (Groq):** O payload é enviado via API REST para o Groq, que gera a resposta baseada *exclusivamente* no contexto injetado (mitigando alucinações).
 5. **Output:** A resposta é renderizada na UI do usuário instantaneamente.
 
