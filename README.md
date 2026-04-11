@@ -72,6 +72,12 @@ Assista à demonstração do funcionamento da arquitetura e da integração da I
 
 🔗 **[INSERIR O LINK DO YOUTUBE AQUI]**
 
+
+## Diagrama do projeto
+
+<img width="1124" height="624" alt="image" src="https://github.com/user-attachments/assets/513113ce-1bd9-417b-9e94-326ce8108396" />
+
+
 ## 👥 Equipe (Grupo CATECH)
 
 -   Daniel Santana Corrêa Batista [RM559622]
