@@ -1,54 +1,62 @@
 
-# 🏴‍☠️ Rei dos Piratas - Assistente Virtual (Sprint 3 - IA)
+# 🏴‍☠️ Rei dos Piratas - Assistente Virtual (Sprint 4 - Integração e IA)
 
-Este repositório contém a Prova de Conceito (PoC) do Assistente Virtual Inteligente para a plataforma de e-commerce "Rei dos Piratas". A aplicação utiliza Inteligência Artificial Generativa para automatizar o atendimento ao cliente, responder a dúvidas frequentes (FAQ) e atuar como um curador de mangás.
+Este repositório contém a versão integrada e de produção do Assistente Virtual Inteligente para a plataforma de e-commerce "Rei dos Piratas". A aplicação utiliza Inteligência Artificial Generativa aliada a um banco de dados relacional em nuvem para automatizar o atendimento ao cliente, responder a dúvidas frequentes (FAQ) e atuar como um curador de mangás com base no estoque real.
 
 ## 📌 O Problema
 Com o crescimento da base de clientes e do catálogo de produtos, o suporte humano se torna um gargalo operacional e financeiro. Dúvidas repetitivas sobre frete, políticas de devolução e disponibilidade de mangás ocupam tempo útil da equipe.
 
-## 💡 A Solução e Justificativa do Modelo
-Para resolver este problema, implementamos um assistente baseado em LLM (Large Language Model) utilizando a técnica de **RAG (Retrieval-Augmented Generation)** simulado.
+## 💡 A Solução e Arquitetura
+Para resolver este problema, implementamos um assistente baseado em LLM (Large Language Model) utilizando a técnica de **RAG (Retrieval-Augmented Generation) Dinâmico**.
 
 * **Modelo Escolhido:** `llama-3.1-8b-instant` (via Groq Cloud).
-*  **Justificativa:** Optamos pelo LLaMA 3.1 rodando na infraestrutura LPU do Groq devido à **latência ultrabaixa** (respostas em milissegundos) e **custo zero** para desenvolvimento[cite: 200]. Modelos locais (como Ollama) exigiriam hardware dedicado pesado, enquanto o Groq nos permite escalar a aplicação com baixo custo e alta performance, essencial para uma experiência mobile fluida. A versão 3.1 de 8 bilhões de parâmetros é mais do que suficiente para tarefas de NLP como recomendação de produtos e FAQ.
+* **Integração de Dados:** Oracle Autonomous Database (Cloud).
+* **Justificativa:** Optamos pelo LLaMA 3.1 rodando na infraestrutura LPU do Groq devido à latência ultrabaixa (respostas em milissegundos). A API foi construída de forma totalmente *stateless* e assíncrona. Em vez de inventar ou simular dados, o backend conecta-se nativamente ao Oracle DB, consulta a tabela `PRODUTOS` em tempo real e injeta os itens com `ESTOQUE > 0` diretamente no contexto da LLM, blindando a aplicação contra alucinações.
 
-## 🔄 Arquitetura e Fluxo de Dados
-A aplicação foi isolada em um container Docker, garantindo paridade entre desenvolvimento e produção.  O fluxo de funcionamento da IA é o seguinte[cite: 202, 203]:
+## 🔄 Fluxo de Dados
+A aplicação roda isolada em um container Docker, garantindo paridade entre desenvolvimento e produção. O fluxo de funcionamento é o seguinte:
 
 1. **Input (User):** O cliente digita a dúvida na interface web.
-2. **Backend (FastAPI):** A API recebe a requisição e injeta o `SYSTEM_PROMPT` contendo o contexto dinâmico do negócio.
-3.  **Dados Utilizados:** O contexto contém as regras de negócio da loja (FAQ, frete, pagamentos) e o estado atual do catálogo de mangás em estoque[cite: 201].
-4. **Processamento (Groq):** O payload é enviado via API REST para o Groq, que gera a resposta baseada *exclusivamente* no contexto injetado (mitigando alucinações).
-5. **Output:** A resposta é renderizada na UI do usuário instantaneamente.
+2. **Data Fetching (FastAPI + Oracle):** O backend recebe a requisição e faz uma consulta assíncrona (via `oracledb` Thin mode) ao Oracle Cloud para buscar o catálogo atualizado.
+3. **Contextualização:** A API monta o `SYSTEM_PROMPT` injetando as regras de negócio da loja e o estado atual do catálogo.
+4. **Processamento (Groq):** O payload é enviado para o Groq, que gera a resposta baseada *exclusivamente* no contexto injetado e no histórico enviado pelo client.
+5. **Output (Frontend):** A resposta é compilada de Markdown para HTML em tempo real e renderizada na UI com tratamento de concorrência e animações nativas.
 
 ## 🛠️ Tecnologias Utilizadas
-* **Python 3.11:** Linguagem base da aplicação.
-* **FastAPI:** Framework web moderno e assíncrono para a criação da API REST e geração do Swagger.
-* **Groq SDK:** Cliente para comunicação com a LLM.
+* **Python 3.11 (Slim):** Linguagem base da aplicação.
+* **FastAPI & Uvicorn:** Framework web moderno e assíncrono para a API REST.
+* **OracleDB Driver:** Driver nativo para consultas assíncronas ao banco de dados.
+* **Groq SDK:** Cliente para comunicação ultrarrápida com a LLM.
 * **Docker & Docker Compose:** Containerização e orquestração do ambiente.
-* **HTML/CSS/JS (Vanilla):** Interface de usuário leve para demonstração.
+* **Vanilla JS + Marked.js:** Interface de usuário fluida, resiliente a spam de requisições e com renderização de Markdown.
 
 ## 🚀 Como Executar o Projeto
 
 **Pré-requisitos:**
 * Docker e Docker Compose instalados.
-* Uma chave de API válida do Groq (`GROQ_API_KEY`).
+* Chave de API válida do Groq (`GROQ_API_KEY`).
+* Credenciais de acesso ao banco Oracle Cloud.
 
 **Passo a passo:**
 1. Clone este repositório:
    ```bash
-   git clone https://github.com/Dejota-04/IA-RDP.git
+   git clone [https://github.com/Dejota-04/IA-RDP.git](https://github.com/Dejota-04/IA-RDP.git)
    cd IA-RDP
 
 
 
-2.  Crie um arquivo `.env` na raiz do projeto e insira sua chave e o modelo:
+2.  Crie um arquivo `.env` na raiz do projeto e insira as credenciais:
 
-    Snippet de código
+
 
     ```
     GROQ_API_KEY=gsk_sua_chave_aqui
     GROQ_MODEL=llama-3.1-8b-instant
+
+    # Credenciais Oracle DB
+    DB_USER=seu_usuario
+    DB_PASSWORD=sua_senha
+    DB_DSN=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.sa-saopaulo-1.oraclecloud.com))(connect_data=(service_name=seu_service_name.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))
 
     ```
 
@@ -63,20 +71,19 @@ A aplicação foi isolada em um container Docker, garantindo paridade entre dese
 
 4.  Acesse a interface de chat: 👉 **http://localhost:8000**
 
-5.  (Opcional) Acesse a documentação Swagger da API: 👉 **http://localhost:8000/docs**
+5.  _(Opcional)_ Acesse o Swagger da API: 👉 **http://localhost:8000/docs**
 
 
-## 🎥 Demonstração (Vídeo Pitch)
+## 🎥 Demonstração (Vídeo Pitch - Sprint 4)
 
-Assista à demonstração do funcionamento da arquitetura e da integração da IA clicando no link abaixo:
+Assista à demonstração da arquitetura e da integração real com o Oracle DB funcionando na prática:
 
-🔗 **https://youtu.be/_c_M5mhEKJ0**
+🔗 **[INSERIR O NOVO LINK DO YOUTUBE AQUI]**
 
 
 ## Diagrama do projeto
 
 <img width="1124" height="624" alt="image" src="https://github.com/user-attachments/assets/513113ce-1bd9-417b-9e94-326ce8108396" />
-
 
 ## 👥 Equipe (Grupo CATECH)
 
@@ -85,3 +92,6 @@ Assista à demonstração do funcionamento da arquitetura e da integração da I
 -   Wendell Nascimento Dourado [RM559336]
 
 -   Jonas de Jesus Campos de Oliveira [RM561144]
+
+
+
