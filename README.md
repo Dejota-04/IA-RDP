@@ -78,7 +78,7 @@ A aplicação roda isolada em um container Docker, garantindo paridade entre des
 
 Assista à demonstração da arquitetura e da integração real com o Oracle DB funcionando na prática:
 
-🔗 **[INSERIR O NOVO LINK DO YOUTUBE AQUI]**
+🔗 **[https://youtu.be/9OR3y3JlBnU?si=0bRaju0Erb3YNiAr]**
 
 
 ## Diagrama do projeto
